@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable } from 'react-native';
 
 /**
  * OTP input with individual digit boxes.
+ * Uses Inter font and unified design system.
  *
  * A single hidden <TextInput> captures all keyboard input.
  * Visible "boxes" mirror each character of the hidden input's value.
@@ -59,15 +60,19 @@ export default function OtpInput({
               : isActive
                 ? 'border-primary'
                 : digit
-                  ? 'border-text'
+                  ? 'border-primary-dark'
                   : 'border-border';
+            const boxBg = digit ? 'bg-primary-light' : 'bg-surface';
 
             return (
               <View
                 key={i}
-                className={`w-12 h-14 border-2 rounded-lg items-center justify-center ${boxBorder}`}
+                className={`w-12 h-14 border-2 rounded-xl items-center justify-center ${boxBorder} ${boxBg}`}
               >
-                <Text className="text-xl font-bold text-text">
+                <Text
+                  className="text-xl text-text font-bold"
+                  style={{ fontFamily: 'Inter_700Bold' }}
+                >
                   {digit}
                 </Text>
               </View>

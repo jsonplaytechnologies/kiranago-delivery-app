@@ -1,8 +1,4 @@
-/**
- * Tailwind CSS configuration for KiranaGo Delivery (NativeWind v4)
- *
- * @type {import('tailwindcss').Config}
- */
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -13,21 +9,39 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#2E7D32',
-        'primary-dark': '#1B5E20',
-        'primary-light': '#E8F5E9',
-        background: '#FFFFFF',
-        surface: '#F5F5F5',
-        'surface-dark': '#EEEEEE',
-        text: '#1C1C1E',
-        'text-secondary': '#6B7280',
-        error: '#D32F2F',
-        border: '#E5E5E5',
-        warning: '#F57C00',
-        success: '#2E7D32',
+        primary: {
+          DEFAULT: '#0D9F61',
+          light: '#E6F7EF',
+          dark: '#087A4A',
+        },
+        accent: {
+          DEFAULT: '#FF6B35',
+          light: '#FFF0EB',
+          dark: '#E55A28',
+        },
+        background: '#F8FAFC',
+        surface: '#FFFFFF',
+        border: '#E2E8F0',
+        text: {
+          DEFAULT: '#0F172A',
+          secondary: '#475569',
+          muted: '#94A3B8',
+        },
+        success: '#22C55E',
+        warning: '#F59E0B',
+        error: '#EF4444',
       },
       fontFamily: {
-        sans: ['System'],
+        sans: ['Inter_400Regular'],
+        medium: ['Inter_500Medium'],
+        semibold: ['Inter_600SemiBold'],
+        bold: ['Inter_700Bold'],
+      },
+      borderRadius: {
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
       },
     },
   },

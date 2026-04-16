@@ -1,50 +1,82 @@
 import React from 'react';
 import { View, Text, Switch, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+  useSharedValue,
+  useDerivedValue,
+} from 'react-native-reanimated';
 
 import { COLORS } from '../lib/constants';
 
 /**
  * Big prominent online/offline toggle for the delivery dashboard.
  *
- * Shows a large switch with "You're Online" / "You're Offline" text
- * and green/gray coloring.
- *
- * @param {object}   props
- * @param {boolean}  props.isOnline  - Current online status
- * @param {function} props.onToggle  - Called with the new boolean value
- * @param {boolean}  [props.loading] - Shows spinner while toggling
+ * Online: primary green background, white text, radio-outline icon
+ * Offline: neutral background, textSecondary text, radio-button-off-outline
+ * Smooth color transition animation between states.
  */
 export default function OnlineToggle({ isOnline, onToggle, loading = false }) {
+  const progress = useDerivedValue(() =>
+    withTiming(isOnline ? 1 : 0, { duration: 400 }),
+  );
+
+  const animatedCardStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      ['#F1F5F9', COLORS.primary],
+    ),
+  }));
+
   return (
-    <View
-      className={`rounded-2xl p-6 mx-4 mt-4 ${isOnline ? 'bg-primary-light' : 'bg-surface'}`}
+    <Animated.View
+      style={animatedCardStyle}
+      className="rounded-xl p-6 mx-4 mt-4 shadow-md"
     >
       <View className="flex-row items-center justify-between">
-        <View className="flex-1 mr-4">
-          <Text
-            className={`text-2xl font-bold ${isOnline ? 'text-primary' : 'text-text-secondary'}`}
-          >
-            {isOnline ? "You're Online" : "You're Offline"}
-          </Text>
-          <Text className="text-sm text-text-secondary mt-1">
-            {isOnline
-              ? 'You will receive new orders'
-              : 'Toggle to start receiving orders'}
-          </Text>
+        <View className="flex-row items-center flex-1 mr-4">
+          <Ionicons
+            name={isOnline ? 'radio-outline' : 'radio-button-off-outline'}
+            size={28}
+            color={isOnline ? '#FFFFFF' : COLORS.textMuted}
+            style={{ marginRight: 12 }}
+          />
+          <View>
+            <Text
+              className={`text-xl font-bold ${isOnline ? 'text-white' : 'text-text-secondary'}`}
+              style={{ fontFamily: 'Inter_700Bold', fontSize: 20 }}
+            >
+              {isOnline ? "You're Online" : "You're Offline"}
+            </Text>
+            <Text
+              className={`text-sm mt-1 ${isOnline ? 'text-white/80' : 'text-text-muted'}`}
+              style={{ fontFamily: 'Inter_400Regular' }}
+            >
+              {isOnline
+                ? 'You will receive new orders'
+                : 'Toggle to start receiving orders'}
+            </Text>
+          </View>
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator
+            size="large"
+            color={isOnline ? '#FFFFFF' : COLORS.primary}
+          />
         ) : (
           <Switch
             value={isOnline}
             onValueChange={onToggle}
-            trackColor={{ false: '#D1D5DB', true: '#81C784' }}
-            thumbColor={isOnline ? COLORS.primary : '#9CA3AF'}
-            style={{ transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }] }}
+            trackColor={{ false: '#CBD5E1', true: '#FFFFFF40' }}
+            thumbColor={isOnline ? '#FFFFFF' : '#94A3B8'}
+            style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
           />
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }

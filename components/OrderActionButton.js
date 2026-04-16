@@ -6,21 +6,40 @@ import Button from './ui/Button';
 /**
  * Status-specific action button for order detail screen.
  *
- * Displays the appropriate next-status action based on the current order status.
- * - PLACED → "Mark as Packed" (green)
- * - PACKED → "Out for Delivery" (green)
- * - OUT_FOR_DELIVERY → "Mark Delivered" (green)
- * - DELIVERED → "Completed" (disabled, gray)
- *
- * @param {object}   props
- * @param {string}   props.status   - Current order status
- * @param {function} props.onPress  - Called when the action button is pressed
- * @param {boolean}  [props.loading] - Shows spinner
+ * - PLACED:            "Mark as Packed"  — primary green, cube-outline icon
+ * - PACKED:            "Out for Delivery" — accent orange, bicycle-outline icon
+ * - OUT_FOR_DELIVERY:  "Mark Delivered"  — success green, checkmark-circle-outline icon
+ * - DELIVERED:         "Completed"       — disabled neutral, checkmark-done-outline icon
  */
+
+const STATUS_CONFIG = {
+  PLACED: {
+    variant: 'primary',
+    icon: 'cube-outline',
+  },
+  PACKED: {
+    variant: 'accent',
+    icon: 'bicycle-outline',
+  },
+  OUT_FOR_DELIVERY: {
+    variant: 'success',
+    icon: 'checkmark-circle-outline',
+  },
+  DELIVERED: {
+    variant: 'disabled',
+    icon: 'checkmark-done-outline',
+  },
+  CANCELLED: {
+    variant: 'disabled',
+    icon: 'close-circle-outline',
+  },
+};
+
 export default function OrderActionButton({ status, onPress, loading = false }) {
   const label = STATUS_ACTION_LABELS[status] || 'No Action';
   const nextStatus = NEXT_STATUS[status];
   const isCompleted = status === 'DELIVERED' || status === 'CANCELLED';
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.DELIVERED;
 
   return (
     <Button
@@ -28,7 +47,8 @@ export default function OrderActionButton({ status, onPress, loading = false }) 
       onPress={() => onPress(nextStatus)}
       loading={loading}
       disabled={isCompleted}
-      variant={isCompleted ? 'secondary' : 'primary'}
+      variant={config.variant}
+      icon={config.icon}
     />
   );
 }

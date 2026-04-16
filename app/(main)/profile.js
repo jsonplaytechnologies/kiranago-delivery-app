@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, ScrollView } from 'react-native';
+import { View, Text, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { useAuthStore } from '../../lib/store/authStore';
 import { updateDeliveryMe } from '../../lib/api';
@@ -18,6 +20,14 @@ export default function ProfileScreen() {
 
   const isOnline = partner?.isOnline || false;
 
+  // Generate initials from user name
+  const initials = (user?.name || 'D P')
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -29,7 +39,6 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             setLoggingOut(true);
-            // Go offline before logging out
             try {
               await updateDeliveryMe({ isOnline: false });
             } catch {
@@ -43,93 +52,193 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      {/* ---- Profile header ---- */}
-      <View className="items-center pt-8 pb-6 px-6">
-        <View className="w-20 h-20 bg-primary/10 rounded-full items-center justify-center mb-4">
-          <Ionicons name="person" size={40} color={COLORS.primary} />
-        </View>
-
-        <Text className="text-xl font-bold text-text">
-          {user?.name || 'Delivery Partner'}
-        </Text>
-        <Text className="text-sm text-text-secondary mt-1">
-          +91 {user?.phone || '----------'}
-        </Text>
-
-        {/* ---- Online status indicator ---- */}
-        <View className="flex-row items-center mt-3">
-          <View
-            className={`w-3 h-3 rounded-full mr-2 ${isOnline ? 'bg-primary' : 'bg-text-secondary'}`}
-          />
-          <Text
-            className={`text-sm font-semibold ${isOnline ? 'text-primary' : 'text-text-secondary'}`}
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      {/* ---- Header ---- */}
+      <Animated.View entering={FadeIn.duration(400)} className="px-6 pt-2 pb-3 bg-background">
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-surface items-center justify-center mr-3"
+            activeOpacity={0.7}
           >
-            {isOnline ? 'Online' : 'Offline'}
+            <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text
+            className="text-xl text-text"
+            style={{ fontFamily: 'Inter_700Bold' }}
+          >
+            Profile
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* ---- Info rows ---- */}
-      <View className="mx-6 bg-surface rounded-xl overflow-hidden mb-6">
-        <View className="flex-row items-center px-4 py-4 border-b border-border">
-          <Ionicons name="call-outline" size={20} color={COLORS.primary} />
-          <View className="ml-3 flex-1">
-            <Text className="text-xs text-text-secondary">Phone</Text>
-            <Text className="text-base text-text">
+      <ScrollView className="flex-1 bg-background">
+        {/* ---- Profile card ---- */}
+        <Animated.View entering={FadeInDown.duration(500).delay(100)} className="mx-4 mt-4">
+          <View className="bg-surface rounded-xl p-6 items-center shadow-sm">
+            {/* Avatar */}
+            <View className="w-20 h-20 bg-primary rounded-full items-center justify-center mb-4">
+              <Text
+                className="text-2xl text-white"
+                style={{ fontFamily: 'Inter_700Bold' }}
+              >
+                {initials}
+              </Text>
+            </View>
+
+            {/* Name */}
+            <Text
+              className="text-xl text-text"
+              style={{ fontFamily: 'Inter_700Bold' }}
+            >
+              {user?.name || 'Delivery Partner'}
+            </Text>
+
+            {/* Phone */}
+            <Text
+              className="text-sm text-text-secondary mt-1"
+              style={{ fontFamily: 'Inter_400Regular' }}
+            >
               +91 {user?.phone || '----------'}
             </Text>
+
+            {/* Delivery Partner badge */}
+            <View className="bg-primary-light px-4 py-1.5 rounded-full mt-3">
+              <Text
+                className="text-sm text-primary"
+                style={{ fontFamily: 'Inter_600SemiBold' }}
+              >
+                Delivery Partner
+              </Text>
+            </View>
+
+            {/* Online status indicator */}
+            <View className="flex-row items-center mt-3">
+              <View
+                className={`w-3 h-3 rounded-full mr-2 ${isOnline ? 'bg-success' : 'bg-text-muted'}`}
+              />
+              <Text
+                className={`text-sm ${isOnline ? 'text-success' : 'text-text-muted'}`}
+                style={{ fontFamily: 'Inter_600SemiBold' }}
+              >
+                {isOnline ? 'Online' : 'Offline'}
+              </Text>
+            </View>
           </View>
-        </View>
+        </Animated.View>
 
-        <View className="flex-row items-center px-4 py-4 border-b border-border">
-          <Ionicons name="person-outline" size={20} color={COLORS.primary} />
-          <View className="ml-3 flex-1">
-            <Text className="text-xs text-text-secondary">Name</Text>
-            <Text className="text-base text-text">
-              {user?.name || 'Not set'}
-            </Text>
+        {/* ---- Menu items ---- */}
+        <Animated.View entering={FadeInDown.duration(500).delay(200)} className="mx-4 mt-6">
+          <View className="bg-surface rounded-xl overflow-hidden shadow-sm">
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-4 border-b border-border"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="call-outline" size={20} color={COLORS.primary} />
+              <View className="ml-3 flex-1">
+                <Text
+                  className="text-xs text-text-muted"
+                  style={{ fontFamily: 'Inter_400Regular' }}
+                >
+                  Phone
+                </Text>
+                <Text
+                  className="text-base text-text"
+                  style={{ fontFamily: 'Inter_500Medium' }}
+                >
+                  +91 {user?.phone || '----------'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-4 border-b border-border"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="person-outline" size={20} color={COLORS.primary} />
+              <View className="ml-3 flex-1">
+                <Text
+                  className="text-xs text-text-muted"
+                  style={{ fontFamily: 'Inter_400Regular' }}
+                >
+                  Name
+                </Text>
+                <Text
+                  className="text-base text-text"
+                  style={{ fontFamily: 'Inter_500Medium' }}
+                >
+                  {user?.name || 'Not set'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-4 border-b border-border"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="briefcase-outline" size={20} color={COLORS.primary} />
+              <View className="ml-3 flex-1">
+                <Text
+                  className="text-xs text-text-muted"
+                  style={{ fontFamily: 'Inter_400Regular' }}
+                >
+                  Role
+                </Text>
+                <Text
+                  className="text-base text-text"
+                  style={{ fontFamily: 'Inter_500Medium' }}
+                >
+                  Delivery Partner
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-4"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
+              <View className="ml-3 flex-1">
+                <Text
+                  className="text-xs text-text-muted"
+                  style={{ fontFamily: 'Inter_400Regular' }}
+                >
+                  Status
+                </Text>
+                <Text
+                  className={`text-base ${isOnline ? 'text-success' : 'text-text'}`}
+                  style={{ fontFamily: isOnline ? 'Inter_600SemiBold' : 'Inter_500Medium' }}
+                >
+                  {isOnline ? 'Online' : 'Offline'}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
 
-        <View className="flex-row items-center px-4 py-4 border-b border-border">
-          <Ionicons name="briefcase-outline" size={20} color={COLORS.primary} />
-          <View className="ml-3 flex-1">
-            <Text className="text-xs text-text-secondary">Role</Text>
-            <Text className="text-base text-text">Delivery Partner</Text>
-          </View>
-        </View>
+        {/* ---- Logout button ---- */}
+        <Animated.View entering={FadeInDown.duration(500).delay(300)} className="mx-4 mt-6">
+          <Button
+            title="Logout"
+            onPress={handleLogout}
+            variant="danger"
+            loading={loggingOut}
+            icon="log-out-outline"
+          />
+        </Animated.View>
 
-        <View className="flex-row items-center px-4 py-4">
-          <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
-          <View className="ml-3 flex-1">
-            <Text className="text-xs text-text-secondary">Status</Text>
-            <Text className={`text-base ${isOnline ? 'text-primary font-semibold' : 'text-text'}`}>
-              {isOnline ? 'Online — Receiving orders' : 'Offline'}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* ---- App info ---- */}
-      <View className="mx-6 mb-4">
-        <Text className="text-xs text-text-secondary text-center">
-          KiranaGo Delivery v1.0.0
-        </Text>
-        <Text className="text-xs text-text-secondary text-center mt-0.5">
-          By JsonPlay Technologies
-        </Text>
-      </View>
-
-      {/* ---- Logout button ---- */}
-      <View className="mx-6 mb-8">
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          variant="danger"
-          loading={loggingOut}
-        />
-      </View>
-    </ScrollView>
+        {/* ---- Footer ---- */}
+        <Animated.View entering={FadeIn.duration(500).delay(400)} className="mt-8 mb-8 items-center">
+          <Text
+            className="text-xs text-text-muted text-center"
+            style={{ fontFamily: 'Inter_400Regular' }}
+          >
+            KiranaGo by JsonPlay Technologies
+          </Text>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

@@ -1,15 +1,26 @@
 import React from 'react';
-import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, ActivityIndicator, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 // ---------------------------------------------------------------------------
 // Variant style maps (NativeWind className strings)
 // ---------------------------------------------------------------------------
 
 const CONTAINER_VARIANTS = {
-  primary: 'bg-primary active:opacity-90',
-  secondary: 'bg-surface active:opacity-90',
-  outline: 'bg-white border-2 border-primary',
-  danger: 'bg-error active:opacity-90',
+  primary: 'bg-primary',
+  secondary: 'bg-surface border border-border',
+  outline: 'bg-surface border-2 border-primary',
+  danger: 'bg-error',
+  accent: 'bg-accent',
+  success: 'bg-success',
+  disabled: 'bg-background',
 };
 
 const TEXT_VARIANTS = {
@@ -17,59 +28,91 @@ const TEXT_VARIANTS = {
   secondary: 'text-text',
   outline: 'text-primary',
   danger: 'text-white',
+  accent: 'text-white',
+  success: 'text-white',
+  disabled: 'text-text-muted',
 };
 
 const INDICATOR_COLORS = {
   primary: '#FFFFFF',
-  secondary: '#1C1C1E',
-  outline: '#2E7D32',
+  secondary: '#0F172A',
+  outline: '#0D9F61',
   danger: '#FFFFFF',
+  accent: '#FFFFFF',
+  success: '#FFFFFF',
+  disabled: '#94A3B8',
 };
 
 // ---------------------------------------------------------------------------
 // Button component
 // ---------------------------------------------------------------------------
 
-/**
- * Reusable button with primary / secondary / outline / danger variants.
- *
- * @param {object} props
- * @param {string}   props.title         - Button label
- * @param {function} props.onPress       - Press handler
- * @param {'primary'|'secondary'|'outline'|'danger'} [props.variant='primary']
- * @param {boolean}  [props.loading]     - Shows spinner, disables press
- * @param {boolean}  [props.disabled]    - Disables press + dims opacity
- * @param {string}   [props.className]   - Extra NativeWind classes on container
- */
 export default function Button({
   title,
   onPress,
   variant = 'primary',
   loading = false,
   disabled = false,
+  icon,
+  iconSize = 20,
   className = '',
 }) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
   const isDisabled = disabled || loading;
+  const effectiveVariant = isDisabled && variant !== 'disabled' ? variant : variant;
 
   return (
-    <TouchableOpacity
+    <AnimatedTouchable
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.8}
-      className={`w-full items-center justify-center rounded-xl py-4 ${CONTAINER_VARIANTS[variant]} ${isDisabled ? 'opacity-60' : ''} ${className}`}
+      activeOpacity={0.9}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={animatedStyle}
+      className={`w-full flex-row items-center justify-center rounded-xl py-4 ${CONTAINER_VARIANTS[effectiveVariant]} ${isDisabled ? 'opacity-60' : ''} ${className}`}
     >
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={INDICATOR_COLORS[variant]}
+          color={INDICATOR_COLORS[effectiveVariant]}
         />
       ) : (
-        <Text
-          className={`text-lg font-bold ${TEXT_VARIANTS[variant]}`}
-        >
-          {title}
-        </Text>
+        <View className="flex-row items-center">
+          {icon ? (
+            <Ionicons
+              name={icon}
+              size={iconSize}
+              color={
+                effectiveVariant === 'secondary' || effectiveVariant === 'outline'
+                  ? '#0D9F61'
+                  : effectiveVariant === 'disabled'
+                    ? '#94A3B8'
+                    : '#FFFFFF'
+              }
+              style={{ marginRight: 8 }}
+            />
+          ) : null}
+          <Text
+            className={`text-lg font-bold ${TEXT_VARIANTS[effectiveVariant]}`}
+            style={{ fontFamily: 'Inter_700Bold' }}
+          >
+            {title}
+          </Text>
+        </View>
       )}
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 }

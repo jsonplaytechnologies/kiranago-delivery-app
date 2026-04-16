@@ -7,6 +7,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { sendOtp } from '../../lib/api';
 import { MOCK_OTP } from '../../lib/constants';
@@ -58,67 +60,73 @@ export default function PhoneScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-white"
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
       >
-        <View className="flex-1 bg-white px-6 pt-16">
-          {/* ---- Dark green header bar ---- */}
-          <View className="bg-primary rounded-2xl py-8 px-6 mb-8 -mx-6 -mt-16">
-            <View className="pt-16">
-              <Text className="text-3xl font-bold text-white text-center">
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          className="flex-1 bg-background"
+        >
+          <View className="flex-1 px-6 pt-16">
+            {/* ---- Brand header ---- */}
+            <Animated.View entering={FadeIn.duration(600)} className="items-center mb-12">
+              <Text className="text-4xl text-primary font-bold" style={{ fontFamily: 'Inter_700Bold' }}>
                 KiranaGo
               </Text>
-              <Text className="text-base text-white/80 text-center mt-1">
+              <Text className="text-base text-text-secondary mt-1" style={{ fontFamily: 'Inter_500Medium' }}>
                 Delivery Partner
               </Text>
-            </View>
+            </Animated.View>
+
+            {/* ---- Phone input section ---- */}
+            <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+              <Text className="text-xl text-text font-bold mb-1" style={{ fontFamily: 'Inter_700Bold' }}>
+                Login to deliver
+              </Text>
+              <Text className="text-sm text-text-secondary mb-6" style={{ fontFamily: 'Inter_400Regular' }}>
+                Enter your mobile number to get started
+              </Text>
+
+              <Input
+                label="Mobile number"
+                value={phone}
+                onChangeText={(text) => {
+                  setPhone(text.replace(/[^0-9]/g, ''));
+                  if (error) setError('');
+                }}
+                placeholder="Enter 10-digit number"
+                keyboardType="number-pad"
+                maxLength={10}
+                prefix="+91"
+                error={error}
+              />
+
+              {/* ---- Continue button ---- */}
+              <View className="mt-6">
+                <Button
+                  title="Continue"
+                  onPress={handleContinue}
+                  loading={loading}
+                  disabled={phone.length < 10}
+                />
+              </View>
+
+              {/* ---- Dev hint ---- */}
+              {__DEV__ && (
+                <Text
+                  className="text-xs text-text-muted text-center mt-4"
+                  style={{ fontFamily: 'Inter_400Regular' }}
+                >
+                  Dev OTP: {MOCK_OTP}
+                </Text>
+              )}
+            </Animated.View>
           </View>
-
-          {/* ---- Phone input ---- */}
-          <Text className="text-xl font-bold text-text mb-1">
-            Login to deliver
-          </Text>
-          <Text className="text-sm text-text-secondary mb-6">
-            Enter your mobile number to get started
-          </Text>
-
-          <Input
-            label="Mobile number"
-            value={phone}
-            onChangeText={(text) => {
-              setPhone(text.replace(/[^0-9]/g, ''));
-              if (error) setError('');
-            }}
-            placeholder="Enter 10-digit number"
-            keyboardType="number-pad"
-            maxLength={10}
-            prefix="+91"
-            error={error}
-          />
-
-          {/* ---- Continue button ---- */}
-          <View className="mt-6">
-            <Button
-              title="Continue"
-              onPress={handleContinue}
-              loading={loading}
-              disabled={phone.length < 10}
-            />
-          </View>
-
-          {/* ---- Dev hint ---- */}
-          {__DEV__ && (
-            <Text className="text-xs text-text-secondary text-center mt-4 opacity-60">
-              Dev OTP: {MOCK_OTP}
-            </Text>
-          )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
